@@ -25,13 +25,13 @@ class RoleDemoSeeder extends Seeder
     /** @var array<string, array<string, string>> */
     private array $demoUsers = [
         'founder'          => ['name' => 'Pranay Bhargava (Founder)',        'email' => 'pranay@healingourth.com'],
-        'vendor'           => ['name' => 'Ravi Kumar (Vendor)',           'email' => 'vendor@ourth.local'],
-        'consumer'         => ['name' => 'Priya Sharma (Consumer)',       'email' => 'consumer@ourth.local'],
-        'operations'       => ['name' => 'Suresh Nair (Operations)',      'email' => 'operations@ourth.local'],
-        'waste_management' => ['name' => 'Deepak Rao (Waste Mgmt)',       'email' => 'waste@ourth.local'],
-        'finance'          => ['name' => 'Ananya Singh (Finance)',        'email' => 'finance@ourth.local'],
+        'vendor'           => ['name' => 'Ravi Kumar (Vendor)',           'email' => 'vendor@ourth.app'],
+        'consumer'         => ['name' => 'Priya Sharma (Consumer)',       'email' => 'consumer@ourth.app'],
+        'operations'       => ['name' => 'Suresh Nair (Operations)',      'email' => 'operations@ourth.app'],
+        'waste_management' => ['name' => 'Deepak Rao (Waste Mgmt)',       'email' => 'waste@ourth.app'],
+        'finance'          => ['name' => 'Ananya Singh (Finance)',        'email' => 'finance@ourth.app'],
         'admin'            => ['name' => 'Sahil (Admin)',                 'email' => 'sahilbhargava6@gmail.com'],
-        'marketing'        => ['name' => 'Meera Patel (Marketing)',       'email' => 'marketing@ourth.local'],
+        'marketing'        => ['name' => 'Meera Patel (Marketing)',       'email' => 'marketing@ourth.app'],
     ];
 
     public function run(): void
