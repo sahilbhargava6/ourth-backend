@@ -11,32 +11,36 @@ class AdminUserSeeder extends Seeder
     /**
      * Run the database seeds.
      */
+    /** @var array<string, array<string, string>> */
+    private array $users = [
+        'founder' => ['name' => 'Pranay Bhargava (Founder)',   'email' => 'pranay@healingourth.com'],
+        'admin' => ['name' => 'Sahil (Admin)',               'email' => 'sahilbhargava6@gmail.com'],
+        'operations' => ['name' => 'Suresh Nair (Operations)',    'email' => 'operations@ourth.app'],
+        'waste_management' => ['name' => 'Deepak Rao (Waste Mgmt)',     'email' => 'waste@ourth.app'],
+        'finance' => ['name' => 'Ananya Singh (Finance)',      'email' => 'finance@ourth.app'],
+        'marketing' => ['name' => 'Meera Patel (Marketing)',     'email' => 'marketing@ourth.app'],
+        'government' => ['name' => 'Government Officer',          'email' => 'government@ourth.app'],
+        'vendor' => ['name' => 'Ravi Kumar (Vendor)',         'email' => 'vendor@ourth.app'],
+        'consumer' => ['name' => 'Priya Sharma (Consumer)',     'email' => 'consumer@ourth.app'],
+    ];
+
     public function run(): void
     {
-        // Create admin user for testing
-        User::updateOrCreate(
-            ['email' => 'admin@ourth.local'],
-            [
-                'name' => 'Admin User',
-                'email' => 'admin@ourth.local',
-                'password' => Hash::make('password123'),
-                'role' => 'admin',
-                'email_verified_at' => now(),
-            ]
-        );
+        foreach ($this->users as $role => $attrs) {
+            User::updateOrCreate(
+                ['email' => $attrs['email']],
+                [
+                    'name' => $attrs['name'],
+                    'password' => Hash::make('password123'),
+                    'role' => $role,
+                    'email_verified_at' => now(),
+                ]
+            );
+        }
 
-        // Create government user for testing
-        User::updateOrCreate(
-            ['email' => 'government@ourth.local'],
-            [
-                'name' => 'Government Officer',
-                'email' => 'government@ourth.local',
-                'password' => Hash::make('password123'),
-                'role' => 'government',
-                'email_verified_at' => now(),
-            ]
-        );
-
-        $this->command->info('Admin users created successfully.');
+        $this->command->info('Users created successfully (password: password123):');
+        foreach ($this->users as $role => $attrs) {
+            $this->command->line("  [{$role}] {$attrs['email']}");
+        }
     }
 }
