@@ -95,8 +95,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/stats', [OrderController::class, 'stats']); // Get order statistics
         Route::post('/', [OrderController::class, 'store']); // Create order
         Route::get('/{order}', [OrderController::class, 'show']); // Get order details
-        Route::post('/{order}/confirm', [OrderController::class, 'confirm']); // Confirm order
-        Route::post('/{order}/dispatch', [OrderController::class, 'dispatch']); // Dispatch order
+        Route::post('/{order}/confirm', [OrderController::class, 'confirm']); // Confirm order (pending → confirmed)
+        Route::post('/{order}/process', [OrderController::class, 'process']); // Ready Box (confirmed → processing)
+        Route::post('/{order}/dispatch', [OrderController::class, 'dispatch']); // Dispatch (processing → out_for_delivery)
         Route::post('/{order}/deliver', [OrderController::class, 'deliver']); // Mark order as delivered
         Route::post('/{order}/cancel', [OrderController::class, 'cancel']); // Cancel order
         Route::post('/{order}/tracking/location', [MobileOrderController::class, 'updateLocation']); // Update rider GPS

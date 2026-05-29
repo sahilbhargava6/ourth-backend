@@ -57,7 +57,7 @@ class OrderController extends Controller
         ])
             ->with(['vendor:id,business_name', 'items']);
 
-        if ($status && in_array($status, ['pending', 'confirmed', 'dispatched', 'delivered', 'cancelled'])) {
+        if ($status && in_array($status, ['pending', 'confirmed', 'processing', 'out_for_delivery', 'delivered', 'cancelled'])) {
             $query->where('order_status', $status);
         }
 
@@ -214,28 +214,60 @@ class OrderController extends Controller
     }
 
     /**
-     * Dispatch order (Admin only)
+     * Mark order as processing / Ready Box (Admin only)
      *
-     * POST /api/v1/orders/{order}/dispatch
+     * POST /api/v1/orders/{order}/process
      */
-    public function dispatch(Request $request, Order $order): JsonResponse
+    public function process(Request $request, Order $order): JsonResponse
     {
-        if (! in_array($order->order_status, ['pending', 'confirmed'])) {
+        if ($order->order_status !== 'confirmed') {
             return response()->json([
                 'success' => false,
-                'message' => 'Only pending or confirmed orders can be dispatched',
+                'message' => 'Only confirmed orders can be marked as ready to box',
             ], 400);
         }
 
         try {
             $order->update([
-                'order_status' => 'dispatched',
+                'order_status' => 'processing',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order marked as ready to box',
+                'data' => $order,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Process update failed: '.$e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Dispatch order — mark as Out for Delivery (Admin only)
+     *
+     * POST /api/v1/orders/{order}/dispatch
+     */
+    public function dispatch(Request $request, Order $order): JsonResponse
+    {
+        if ($order->order_status !== 'processing') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only processing (ready box) orders can be dispatched',
+            ], 400);
+        }
+
+        try {
+            $order->update([
+                'order_status' => 'out_for_delivery',
                 'dispatched_at' => now(),
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Order dispatched',
+                'message' => 'Order is out for delivery',
                 'data' => $order,
             ]);
         } catch (\Exception $e) {
@@ -291,10 +323,10 @@ class OrderController extends Controller
      */
     public function deliver(Request $request, Order $order): JsonResponse
     {
-        if ($order->order_status !== 'dispatched') {
+        if ($order->order_status !== 'out_for_delivery') {
             return response()->json([
                 'success' => false,
-                'message' => 'Only dispatched orders can be marked as delivered',
+                'message' => 'Only orders out for delivery can be marked as delivered',
             ], 400);
         }
 
