@@ -25,9 +25,9 @@ class VendorDiscoveryController extends Controller
     public function index(Request $request): JsonResponse
     {
         $request->validate([
-            'lat'      => ['nullable', 'numeric', 'between:-90,90'],
-            'lng'      => ['nullable', 'numeric', 'between:-180,180'],
-            'radius'   => ['nullable', 'numeric', 'min:0.1', 'max:100'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'radius' => ['nullable', 'numeric', 'min:0.1', 'max:100'],
             'category' => ['nullable', 'string', 'max:100'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
@@ -45,8 +45,8 @@ class VendorDiscoveryController extends Controller
         }
 
         if ($request->filled('lat') && $request->filled('lng')) {
-            $lat    = (float) $request->lat;
-            $lng    = (float) $request->lng;
+            $lat = (float) $request->lat;
+            $lng = (float) $request->lng;
             $radius = (float) ($request->radius ?? 10);
 
             // Haversine formula to filter by radius
@@ -66,12 +66,12 @@ class VendorDiscoveryController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $vendors->items(),
-            'meta'    => [
+            'data' => $vendors->items(),
+            'meta' => [
                 'current_page' => $vendors->currentPage(),
-                'last_page'    => $vendors->lastPage(),
-                'total'        => $vendors->total(),
-                'per_page'     => $vendors->perPage(),
+                'last_page' => $vendors->lastPage(),
+                'total' => $vendors->total(),
+                'per_page' => $vendors->perPage(),
             ],
         ]);
     }
@@ -95,7 +95,7 @@ class VendorDiscoveryController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $vendor,
+            'data' => $vendor,
         ]);
     }
 
@@ -108,13 +108,13 @@ class VendorDiscoveryController extends Controller
     public function products(Request $request): JsonResponse
     {
         $request->validate([
-            'q'           => ['nullable', 'string', 'max:100'],
-            'category'    => ['nullable', 'string', 'max:100'],
+            'q' => ['nullable', 'string', 'max:100'],
+            'category' => ['nullable', 'string', 'max:100'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'vendor_id'   => ['nullable', 'integer', 'exists:vendors,id'],
-            'min_price'   => ['nullable', 'numeric', 'min:0'],
-            'max_price'   => ['nullable', 'numeric', 'min:0'],
-            'per_page'    => ['nullable', 'integer', 'min:1', 'max:50'],
+            'vendor_id' => ['nullable', 'integer', 'exists:vendors,id'],
+            'min_price' => ['nullable', 'numeric', 'min:0'],
+            'max_price' => ['nullable', 'numeric', 'min:0'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
 
         $query = Product::select([
@@ -122,10 +122,7 @@ class VendorDiscoveryController extends Controller
             'base_price', 'discounted_price', 'primary_image_url', 'is_featured',
         ])
             ->where('is_active', true)
-            ->where(function ($q) {
-                $q->whereNull('vendor_id')
-                    ->orWhereHas('vendor', fn ($q) => $q->where('kyc_status', 'verified'));
-            })
+            ->whereHas('vendor', fn ($q) => $q->where('kyc_status', 'verified'))
             ->with([
                 'vendor:id,business_name,city,average_rating',
                 'inventory:id,product_id,current_stock',
@@ -161,12 +158,12 @@ class VendorDiscoveryController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $products->items(),
-            'meta'    => [
+            'data' => $products->items(),
+            'meta' => [
                 'current_page' => $products->currentPage(),
-                'last_page'    => $products->lastPage(),
-                'total'        => $products->total(),
-                'per_page'     => $products->perPage(),
+                'last_page' => $products->lastPage(),
+                'total' => $products->total(),
+                'per_page' => $products->perPage(),
             ],
         ]);
     }

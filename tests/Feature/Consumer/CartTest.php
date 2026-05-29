@@ -15,21 +15,24 @@ class CartTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private string $token;
+
     private Vendor $vendor;
+
     private Product $product;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->user    = User::factory()->create(['role' => 'consumer']);
-        $this->token   = $this->user->createToken('mobile')->plainTextToken;
-        $this->vendor  = Vendor::factory()->create();
+        $this->user = User::factory()->create(['role' => 'consumer']);
+        $this->token = $this->user->createToken('mobile')->plainTextToken;
+        $this->vendor = Vendor::factory()->create();
         $this->product = Product::factory()->create([
-            'vendor_id'  => $this->vendor->id,
+            'vendor_id' => $this->vendor->id,
             'base_price' => 100.00,
-            'is_active'  => true,
+            'is_active' => true,
         ]);
     }
 
@@ -57,7 +60,7 @@ class CartTest extends TestCase
     {
         $response = $this->withToken($this->token)->postJson('/api/v1/me/cart/items', [
             'product_id' => $this->product->id,
-            'quantity'   => 2,
+            'quantity' => 2,
         ]);
 
         $response->assertStatus(200)
@@ -71,12 +74,12 @@ class CartTest extends TestCase
     {
         $this->withToken($this->token)->postJson('/api/v1/me/cart/items', [
             'product_id' => $this->product->id,
-            'quantity'   => 2,
+            'quantity' => 2,
         ]);
 
         $this->withToken($this->token)->postJson('/api/v1/me/cart/items', [
             'product_id' => $this->product->id,
-            'quantity'   => 3,
+            'quantity' => 3,
         ]);
 
         $this->assertDatabaseHas('cart_items', ['product_id' => $this->product->id, 'quantity' => 5]);
@@ -84,18 +87,34 @@ class CartTest extends TestCase
 
     public function test_adding_product_from_different_vendor_returns_422(): void
     {
-        $otherVendor  = Vendor::factory()->create();
+        $otherVendor = Vendor::factory()->create();
         $otherProduct = Product::factory()->create(['vendor_id' => $otherVendor->id, 'is_active' => true]);
 
         $this->withToken($this->token)->postJson('/api/v1/me/cart/items', [
             'product_id' => $this->product->id,
-            'quantity'   => 1,
+            'quantity' => 1,
         ]);
 
         $this->withToken($this->token)->postJson('/api/v1/me/cart/items', [
             'product_id' => $otherProduct->id,
-            'quantity'   => 1,
+            'quantity' => 1,
         ])->assertStatus(422);
+    }
+
+    public function test_adding_product_without_vendor_returns_422(): void
+    {
+        $productWithoutVendor = Product::factory()->create([
+            'vendor_id' => null,
+            'is_active' => true,
+        ]);
+
+        $this->withToken($this->token)->postJson('/api/v1/me/cart/items', [
+            'product_id' => $productWithoutVendor->id,
+            'quantity' => 1,
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'This product is currently unavailable for checkout.');
     }
 
     // ──────────────────────────────────────────────────────────
@@ -127,8 +146,8 @@ class CartTest extends TestCase
     public function test_user_cannot_update_another_users_cart_item(): void
     {
         $otherUser = User::factory()->create(['role' => 'consumer']);
-        $cart      = Cart::create(['user_id' => $otherUser->id, 'vendor_id' => $this->vendor->id, 'status' => 'active']);
-        $item      = CartItem::create(['cart_id' => $cart->id, 'product_id' => $this->product->id, 'quantity' => 1, 'unit_price' => 100, 'total_price' => 100]);
+        $cart = Cart::create(['user_id' => $otherUser->id, 'vendor_id' => $this->vendor->id, 'status' => 'active']);
+        $item = CartItem::create(['cart_id' => $cart->id, 'product_id' => $this->product->id, 'quantity' => 1, 'unit_price' => 100, 'total_price' => 100]);
 
         $this->withToken($this->token)->patchJson("/api/v1/me/cart/items/{$item->id}", ['quantity' => 10])
             ->assertStatus(403);

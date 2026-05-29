@@ -312,12 +312,39 @@ class MobileOrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Your cart is empty.'], 422);
         }
 
-        // Resolve vendor_id: prefer cart's vendor_id, fall back to first item's product vendor_id
-        $vendorId = $cart->vendor_id
-            ?? $cart->items->first()?->product?->vendor_id;
+        $invalidItem = $cart->items->first(function ($item) {
+            return ! $item->product || ! $item->product->vendor_id;
+        });
+
+        if ($invalidItem) {
+            return response()->json([
+                'success' => false,
+                'message' => 'One or more items in your cart are unavailable. Please remove them and try again.',
+            ], 422);
+        }
+
+        $vendorIds = $cart->items
+            ->map(fn ($item) => $item->product?->vendor_id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($vendorIds->count() > 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your cart contains items from multiple vendors. Please keep items from one vendor only.',
+            ], 422);
+        }
+
+        // Resolve vendor_id: prefer cart vendor, then validated cart item vendor.
+        $vendorId = $cart->vendor_id ?? $vendorIds->first();
 
         if (! $vendorId) {
             return response()->json(['success' => false, 'message' => 'Unable to determine vendor for this order. Please contact support.'], 422);
+        }
+
+        if (! $cart->vendor_id) {
+            $cart->update(['vendor_id' => $vendorId]);
         }
 
         $isB2B = ($validated['order_type'] ?? 'b2c') === 'b2b';

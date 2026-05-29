@@ -36,7 +36,7 @@ class CartController extends Controller
         if (! $cart) {
             return response()->json([
                 'success' => true,
-                'data'    => null,
+                'data' => null,
                 'message' => 'Cart is empty.',
             ]);
         }
@@ -53,11 +53,18 @@ class CartController extends Controller
     public function addItem(AddToCartRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $user      = $request->user();
+        $user = $request->user();
 
         $product = Product::where('id', $validated['product_id'])
             ->where('is_active', true)
             ->firstOrFail();
+
+        if (! $product->vendor_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This product is currently unavailable for checkout.',
+            ], 422);
+        }
 
         // Enforce single-vendor cart rule
         $existingCart = Cart::where('user_id', $user->id)->where('status', 'active')->first();
@@ -70,9 +77,9 @@ class CartController extends Controller
         }
 
         $cart = $existingCart ?? Cart::create([
-            'user_id'          => $user->id,
-            'vendor_id'        => $product->vendor_id,
-            'status'           => 'active',
+            'user_id' => $user->id,
+            'vendor_id' => $product->vendor_id,
+            'status' => 'active',
             'last_activity_at' => now(),
         ]);
 
@@ -81,14 +88,14 @@ class CartController extends Controller
         $item = $cart->items()->where('product_id', $product->id)->first();
 
         if ($item) {
-            $item->quantity   += $validated['quantity'];
+            $item->quantity += $validated['quantity'];
             $item->total_price = $item->quantity * $unitPrice;
             $item->save();
         } else {
             $item = CartItem::create([
-                'cart_id'    => $cart->id,
+                'cart_id' => $cart->id,
                 'product_id' => $product->id,
-                'quantity'   => $validated['quantity'],
+                'quantity' => $validated['quantity'],
                 'unit_price' => $unitPrice,
                 'total_price' => $validated['quantity'] * $unitPrice,
             ]);
@@ -99,7 +106,7 @@ class CartController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Item added to cart.',
-            'data'    => $cart->fresh(['items.product:id,name,primary_image_url', 'vendor:id,business_name']),
+            'data' => $cart->fresh(['items.product:id,name,primary_image_url', 'vendor:id,business_name']),
         ]);
     }
 
@@ -118,7 +125,7 @@ class CartController extends Controller
             $item->delete();
         } else {
             $item->update([
-                'quantity'    => $request->quantity,
+                'quantity' => $request->quantity,
                 'total_price' => $request->quantity * $item->unit_price,
             ]);
         }
@@ -128,7 +135,7 @@ class CartController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Cart updated.',
-            'data'    => $item->cart->fresh(['items.product:id,name,primary_image_url', 'vendor:id,business_name']),
+            'data' => $item->cart->fresh(['items.product:id,name,primary_image_url', 'vendor:id,business_name']),
         ]);
     }
 
@@ -166,8 +173,8 @@ class CartController extends Controller
     {
         $cart->load('items');
         $cart->update([
-            'total_amount'     => $cart->items->sum('total_price'),
-            'total_items'      => $cart->items->sum('quantity'),
+            'total_amount' => $cart->items->sum('total_price'),
+            'total_items' => $cart->items->sum('quantity'),
             'last_activity_at' => now(),
         ]);
     }
