@@ -66,14 +66,13 @@ class CartController extends Controller
             ], 422);
         }
 
-        // Enforce single-vendor cart rule
         $existingCart = Cart::where('user_id', $user->id)->where('status', 'active')->first();
 
+        // In the B2D model all products belong to the single Ourth distributor vendor.
+        // If a stale cart exists with a mismatched or null vendor_id, just update it
+        // rather than blocking the customer.
         if ($existingCart && $existingCart->vendor_id !== $product->vendor_id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Your cart already contains items from another vendor. Clear the cart first.',
-            ], 422);
+            $existingCart->update(['vendor_id' => $product->vendor_id]);
         }
 
         $cart = $existingCart ?? Cart::create([

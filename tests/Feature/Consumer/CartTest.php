@@ -90,20 +90,24 @@ class CartTest extends TestCase
         $this->assertDatabaseHas('cart_items', ['product_id' => $this->product->id, 'quantity' => 5]);
     }
 
-    public function test_adding_product_from_different_vendor_returns_422(): void
+    public function test_adding_product_from_different_vendor_updates_cart_vendor_id(): void
     {
-        $otherVendor = Vendor::factory()->create();
+        $otherVendor = Vendor::factory()->create(['kyc_status' => 'verified']);
         $otherProduct = Product::factory()->create(['vendor_id' => $otherVendor->id, 'is_active' => true]);
 
         $this->withToken($this->token)->postJson('/api/v1/me/cart/items', [
             'product_id' => $this->product->id,
             'quantity' => 1,
-        ]);
+        ])->assertStatus(200);
 
+        // In the B2D model (single distributor), adding a product from a different vendor
+        // silently updates the cart's vendor_id rather than blocking.
         $this->withToken($this->token)->postJson('/api/v1/me/cart/items', [
             'product_id' => $otherProduct->id,
             'quantity' => 1,
-        ])->assertStatus(422);
+        ])->assertStatus(200);
+
+        $this->assertDatabaseHas('carts', ['user_id' => $this->user->id, 'vendor_id' => $otherVendor->id]);
     }
 
     public function test_adding_product_without_vendor_returns_422(): void
