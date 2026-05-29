@@ -16,6 +16,7 @@ class Order extends Model
         'order_number',
         'uuid',
         'vendor_id',
+        'buyer_vendor_id',
         'order_type',
         'buyer_gstin',
         'order_status',
@@ -81,6 +82,14 @@ class Order extends Model
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);
+    }
+
+    /**
+     * The vendor that placed (bought) this order — null for future B2C consumers.
+     */
+    public function buyerVendor()
+    {
+        return $this->belongsTo(Vendor::class, 'buyer_vendor_id');
     }
 
     public function items()

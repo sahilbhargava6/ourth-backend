@@ -26,9 +26,14 @@ class CartTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create(['role' => 'consumer']);
+        // Vendor user (buyer) — must have role 'vendor' for cart/order route middleware
+        $this->user = User::factory()->create(['role' => 'vendor', 'user_type' => 'vendor']);
         $this->token = $this->user->createToken('mobile')->plainTextToken;
-        $this->vendor = Vendor::factory()->create();
+        Vendor::factory()->create(['user_id' => $this->user->id]);
+        $this->user->refresh();
+
+        // Distributor vendor — product seller
+        $this->vendor = Vendor::factory()->create(['kyc_status' => 'verified']);
         $this->product = Product::factory()->create([
             'vendor_id' => $this->vendor->id,
             'base_price' => 100.00,

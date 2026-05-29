@@ -216,22 +216,26 @@ Route::prefix('v1')->group(function () {
         Route::patch('/addresses/{address}', [AddressController::class, 'update']);
         Route::delete('/addresses/{address}', [AddressController::class, 'destroy']);
 
-        // Cart
-        Route::get('/cart', [CartController::class, 'show']);
-        Route::post('/cart/items', [CartController::class, 'addItem']);
-        Route::patch('/cart/items/{item}', [CartController::class, 'updateItem']);
-        Route::delete('/cart/items/{item}', [CartController::class, 'removeItem']);
-        Route::delete('/cart', [CartController::class, 'clear']);
+        // Cart — vendor-only (B2D MVP; role broadened to 'consumer' for future B2C)
+        Route::middleware('role:vendor,admin')->group(function () {
+            Route::get('/cart', [CartController::class, 'show']);
+            Route::post('/cart/items', [CartController::class, 'addItem']);
+            Route::patch('/cart/items/{item}', [CartController::class, 'updateItem']);
+            Route::delete('/cart/items/{item}', [CartController::class, 'removeItem']);
+            Route::delete('/cart', [CartController::class, 'clear']);
+        });
 
-        // Orders
-        Route::get('/orders', [MobileOrderController::class, 'index']);
-        Route::post('/orders', [MobileOrderController::class, 'store']);
-        Route::get('/orders/{order}', [MobileOrderController::class, 'show']);
-        Route::post('/orders/{order}/cancel', [MobileOrderController::class, 'cancel']);
-        Route::get('/orders/{order}/invoice', [MobileOrderController::class, 'invoice']);
-        Route::get('/orders/{order}/tracking', [MobileOrderController::class, 'tracking']);
-        Route::post('/orders/{order}/payments/razorpay/initiate', [MobileOrderController::class, 'initiateRazorpayPayment']);
-        Route::post('/orders/{order}/payments/razorpay/verify', [MobileOrderController::class, 'verifyRazorpayPayment']);
+        // Orders — vendor-only (B2D MVP)
+        Route::middleware('role:vendor,admin')->group(function () {
+            Route::get('/orders', [MobileOrderController::class, 'index']);
+            Route::post('/orders', [MobileOrderController::class, 'store']);
+            Route::get('/orders/{order}', [MobileOrderController::class, 'show']);
+            Route::post('/orders/{order}/cancel', [MobileOrderController::class, 'cancel']);
+            Route::get('/orders/{order}/invoice', [MobileOrderController::class, 'invoice']);
+            Route::get('/orders/{order}/tracking', [MobileOrderController::class, 'tracking']);
+            Route::post('/orders/{order}/payments/razorpay/initiate', [MobileOrderController::class, 'initiateRazorpayPayment']);
+            Route::post('/orders/{order}/payments/razorpay/verify', [MobileOrderController::class, 'verifyRazorpayPayment']);
+        });
 
         // Device push tokens
         Route::post('/device-token', [DeviceTokenController::class, 'store']);

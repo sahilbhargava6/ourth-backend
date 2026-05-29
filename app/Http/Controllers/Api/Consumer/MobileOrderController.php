@@ -397,6 +397,7 @@ class MobileOrderController extends Controller
             $order = Order::create([
                 'user_id' => $user->id,
                 'vendor_id' => $vendorId,
+                'buyer_vendor_id' => $user->vendor?->id,
                 'order_type' => $orderType,
                 'buyer_gstin' => $isB2B ? ($validated['buyer_gstin'] ?? null) : null,
                 'order_status' => 'pending',

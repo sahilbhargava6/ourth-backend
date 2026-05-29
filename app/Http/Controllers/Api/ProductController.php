@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Vendor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -96,6 +97,14 @@ class ProductController extends Controller
         ]);
 
         $validated['sku'] = $validated['sku'] ?? 'SKU-'.strtoupper(Str::random(8));
+
+        // Auto-assign the distributor vendor when admin doesn't explicitly specify one
+        if (empty($validated['vendor_id'])) {
+            $distributor = Vendor::distributor();
+            if ($distributor) {
+                $validated['vendor_id'] = $distributor->id;
+            }
+        }
 
         if (empty($validated['category']) && ! empty($validated['category_id'])) {
             $validated['category'] = Category::find($validated['category_id'])?->name ?? 'General';

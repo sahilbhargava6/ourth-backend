@@ -12,6 +12,7 @@ class Vendor extends Model
 
     protected $fillable = [
         'user_id',
+        'is_distributor',
         'vendor_code',
         'business_name',
         'business_category',
@@ -43,9 +44,18 @@ class Vendor extends Model
         'total_revenue',
     ];
 
+    /**
+     * Retrieve the single Ourth distributor vendor.
+     */
+    public static function distributor(): ?self
+    {
+        return self::where('is_distributor', true)->first();
+    }
+
     protected function casts(): array
     {
         return [
+            'is_distributor' => 'boolean',
             'kyc_verified_at' => 'datetime',
             'trade_license_expiry' => 'date',
             'average_rating' => 'float',
