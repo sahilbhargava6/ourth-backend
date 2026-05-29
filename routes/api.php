@@ -1,19 +1,20 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\UploadController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\Consumer\AddressController;
 use App\Http\Controllers\Api\Consumer\CartController;
 use App\Http\Controllers\Api\Consumer\DeviceTokenController;
 use App\Http\Controllers\Api\Consumer\MobileOrderController;
 use App\Http\Controllers\Api\Consumer\NotificationController;
 use App\Http\Controllers\Api\Consumer\PaymentMethodController;
-use App\Http\Controllers\Api\Consumer\TaxProfileController;
-use App\Http\Controllers\Api\Consumer\AddressController;
 use App\Http\Controllers\Api\Consumer\ProfileController;
 use App\Http\Controllers\Api\Consumer\QrScanController;
 use App\Http\Controllers\Api\Consumer\RatingController;
 use App\Http\Controllers\Api\Consumer\RewardController;
 use App\Http\Controllers\Api\Consumer\SubscriptionController;
+use App\Http\Controllers\Api\Consumer\TaxProfileController;
 use App\Http\Controllers\Api\Consumer\VendorDiscoveryController;
 use App\Http\Controllers\Api\Consumer\WishlistController;
 use App\Http\Controllers\Api\Dashboard\AdminDashboardController;
@@ -24,8 +25,8 @@ use App\Http\Controllers\Api\Dashboard\MarketingDashboardController;
 use App\Http\Controllers\Api\Dashboard\OperationsDashboardController;
 use App\Http\Controllers\Api\Dashboard\VendorDashboardController;
 use App\Http\Controllers\Api\Dashboard\WasteManagementDashboardController;
-use App\Http\Controllers\Api\Admin\UploadController;
 use App\Http\Controllers\Api\KYCApprovalController;
+use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\UserController;
@@ -40,6 +41,10 @@ use Illuminate\Support\Facades\Route;
  * Phase 2: Can add /api/v2 routes for new services/features without breaking v1
  */
 Route::prefix('v1')->group(function () {
+
+    Route::get('/media/{path}', [MediaController::class, 'show'])
+        ->where('path', '.*')
+        ->name('media.show');
 
     // Authentication Routes (no auth required)
     // Throttle: 10 attempts per minute per IP to prevent brute-force attacks
