@@ -97,6 +97,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/{order}', [OrderController::class, 'show']); // Get order details
         Route::post('/{order}/confirm', [OrderController::class, 'confirm']); // Confirm order
         Route::post('/{order}/dispatch', [OrderController::class, 'dispatch']); // Dispatch order
+        Route::post('/{order}/deliver', [OrderController::class, 'deliver']); // Mark order as delivered
         Route::post('/{order}/cancel', [OrderController::class, 'cancel']); // Cancel order
         Route::post('/{order}/tracking/location', [MobileOrderController::class, 'updateLocation']); // Update rider GPS
     });

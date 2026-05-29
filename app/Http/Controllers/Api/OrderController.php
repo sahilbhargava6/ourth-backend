@@ -133,7 +133,7 @@ class OrderController extends Controller
             $subtotal = 0;
 
             $order = Order::create([
-                'order_number' => 'ORD-' . now()->format('Y') . '-' . str_pad(Order::count() + 1, 6, '0', STR_PAD_LEFT),
+                'order_number' => 'ORD-'.now()->format('Y').'-'.str_pad(Order::count() + 1, 6, '0', STR_PAD_LEFT),
                 'uuid' => Str::uuid(),
                 'vendor_id' => $validated['vendor_id'],
                 'order_status' => 'pending',
@@ -175,7 +175,7 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Order creation failed: ' . $e->getMessage(),
+                'message' => 'Order creation failed: '.$e->getMessage(),
             ], 400);
         }
     }
@@ -208,7 +208,7 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Confirmation failed: ' . $e->getMessage(),
+                'message' => 'Confirmation failed: '.$e->getMessage(),
             ], 400);
         }
     }
@@ -220,7 +220,7 @@ class OrderController extends Controller
      */
     public function dispatch(Request $request, Order $order): JsonResponse
     {
-        if (!in_array($order->order_status, ['pending', 'confirmed'])) {
+        if (! in_array($order->order_status, ['pending', 'confirmed'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Only pending or confirmed orders can be dispatched',
@@ -241,7 +241,7 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Dispatch failed: ' . $e->getMessage(),
+                'message' => 'Dispatch failed: '.$e->getMessage(),
             ], 400);
         }
     }
@@ -260,7 +260,7 @@ class OrderController extends Controller
         if (in_array($order->order_status, ['delivered', 'cancelled'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot cancel ' . $order->order_status . ' orders',
+                'message' => 'Cannot cancel '.$order->order_status.' orders',
             ], 400);
         }
 
@@ -279,7 +279,40 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cancellation failed: ' . $e->getMessage(),
+                'message' => 'Cancellation failed: '.$e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Mark order as delivered (Admin only)
+     *
+     * POST /api/v1/orders/{order}/deliver
+     */
+    public function deliver(Request $request, Order $order): JsonResponse
+    {
+        if ($order->order_status !== 'dispatched') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only dispatched orders can be marked as delivered',
+            ], 400);
+        }
+
+        try {
+            $order->update([
+                'order_status' => 'delivered',
+                'delivered_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order marked as delivered',
+                'data' => $order,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Delivery update failed: '.$e->getMessage(),
             ], 400);
         }
     }
