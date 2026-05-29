@@ -89,8 +89,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/{vendor}/reject', [KYCApprovalController::class, 'reject']); // Reject KYC
     });
 
-    // Order Management (Admin only)
-    Route::prefix('orders')->middleware(['auth:sanctum', 'admin'])->group(function () {
+    // Order Management (Admin + Operations)
+    Route::prefix('orders')->middleware(['auth:sanctum', 'role:admin,operations,founder'])->group(function () {
         Route::get('/', [OrderController::class, 'index']); // List all orders
         Route::get('/stats', [OrderController::class, 'stats']); // Get order statistics
         Route::post('/', [OrderController::class, 'store']); // Create order
